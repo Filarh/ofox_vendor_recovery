@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 26 January 2026
+# 1 March 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -34,7 +34,7 @@
 # other methods for patching recovery/boot images are no longer supported
 export OF_USE_MAGISKBOOT_FOR_ALL_PATCHES=1
 export OF_USE_MAGISKBOOT=1
-export FOX_INTERNAL_RELEASE=R11.3
+export FOX_INTERNAL_RELEASE=R12.0
 
 # device name
 FOX_DEVICE=$(cut -d'_' -f2 <<<$TARGET_PRODUCT)
