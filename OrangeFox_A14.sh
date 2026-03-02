@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 1 March 2026
+# 2 March 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -284,6 +284,7 @@ RAMDISK_SBIN=/sbin
 RAMDISK_ETC=/etc
 RAMDISK_SYSTEM_BIN=/system/bin
 RAMDISK_SYSTEM_ETC=/system/etc
+RAMDISK_SYSTEM_LIB64=/system/lib64
 PROP_DEFAULT="$DEFAULT_PROP"
 
 # identify the build SDK version (not used yet)
@@ -1574,6 +1575,24 @@ if [ "$FOX_VENDOR_CMD" = "Fox_Before_Recovery_Image" ]; then
      chmod 0755 $FOX_RAMDISK/$RAMDISK_SBIN/busybox
   else
      rm -f $FOX_RAMDISK/$RAMDISK_SBIN/busybox
+  fi
+
+  # android V36 prebuilts
+  # "1" = copy libc++ only; "2" = copy libc++ and keystore2
+  if [ "$FOX_ADD_API_V36_PREBUILTS" = "1" -o "$FOX_ADD_API_V36_PREBUILTS" = "2" ]; then
+	echo -e "${GREEN}-- Copying the API v36 stuff ...${NC}"
+	if [ "$FOX_ADD_API_V36_PREBUILTS" = "1" ]; then
+		$CP -p $FOX_VENDOR_PATH/prebuilt/$TARGET_ARCH/libc++_v36.so $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/
+		chmod 0755 $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/libc++_v36.so
+	elif [ "$FOX_ADD_API_V36_PREBUILTS" = "2" ]; then
+		$CP -p $FOX_VENDOR_PATH/prebuilt/$TARGET_ARCH/libc++_v36.so $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/
+		$CP -p $FOX_VENDOR_PATH/prebuilt/$TARGET_ARCH/keystore2_v36 $FOX_RAMDISK/$RAMDISK_SYSTEM_BIN/keystore2
+		chmod 0755 $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/libc++_v36.so
+		chmod 0755 $FOX_RAMDISK/$RAMDISK_SYSTEM_BIN/keystore2
+	fi
+  else
+	rm -f $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/libc++_v36.so
+	rm -f $FOX_RAMDISK/$RAMDISK_SYSTEM_BIN/keystore2
   fi
 
 #########################################################################################

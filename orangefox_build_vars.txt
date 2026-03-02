@@ -8,7 +8,7 @@
 # The build vars beginning with "OF_" can be exported in vendorsetup.sh, or can be declared in a device tree make (ie, ".mk") file
 #
 # Copyright (C) 2019-2026 OrangeFox Recovery Project
-# Date: 26 January 2026
+# Date: 2 March 2026
 #
 # -----------------------------------
 #
@@ -942,4 +942,10 @@
    - the addon is very highly experimental, and should be used with great care; it should NOT be used unless everything else has failed
    - default = 0
 #
+"FOX_ADD_API_V36_PREBUILTS" [NEW] [! EXPERIMENTAL !]
+   - this is for arm64 only; use with great caution - ie, do NOT try it unless you are sure that you need it
+   - the only valid values are 1 or 2
+   - if set to 1, then the prebuilt api_36 libc++ will be added to the recovery
+   - if set to 2, then the prebuilt api_36 libc++ and keystore2 will be added to the recovery
+   - be *extremely careful* before choosing the value of 2, because this will overwrite the standard keystore2 built with the recovery
 # -----------------------------------
