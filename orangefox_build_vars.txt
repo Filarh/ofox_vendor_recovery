@@ -8,7 +8,7 @@
 # The build vars beginning with "OF_" can be exported in vendorsetup.sh, or can be declared in a device tree make (ie, ".mk") file
 #
 # Copyright (C) 2019-2026 OrangeFox Recovery Project
-# Date: 2 March 2026
+# Date: 13 March 2026
 #
 # -----------------------------------
 #
@@ -754,9 +754,9 @@
 -
 - Examples:
 -
--  "export FOX_SETTINGS_ROOT_DIRECTORY=/sdcard/PRIVATE"
+-  "export FOX_MISCELLANEOUS_ROOT_DIRECTORY=/sdcard/PRIVATE"
 -
--  "export FOX_SETTINGS_ROOT_DIRECTORY=/sdcard1/MyDev"
+-  "export FOX_MISCELLANEOUS_ROOT_DIRECTORY=/sdcard1/MyDev"
 -
 -
 - This is a HIGHLY EXPERIMENTAL feature, which may have bugs; use with GREAT caution, and with lots of testing
