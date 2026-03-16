@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 2 March 2026
+# 16 March 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -728,6 +728,12 @@ local TDT=$(date "+%d %B %Y")
   if [ -n "$FOX_MISCELLANEOUS_ROOT_DIRECTORY" ]; then
      echo -e "${RED}-- This build will use $FOX_MISCELLANEOUS_ROOT_DIRECTORY for its stuff ... ${NC}"
      sed -i -e "s|^FOX_MISCELLANEOUS_ROOT_DIRECTORY=.*|FOX_MISCELLANEOUS_ROOT_DIRECTORY=\"$FOX_MISCELLANEOUS_ROOT_DIRECTORY\"|" $F
+  fi
+
+  # save settings root
+  if [ -n "$FOX_SETTINGS_ROOT_DIRECTORY" ]; then
+     echo -e "${RED}-- This build will use $FOX_SETTINGS_ROOT_DIRECTORY for its settings ... ${NC}"
+     sed -i -e "s|^FOX_SETTINGS_ROOT_DIRECTORY=.*|FOX_SETTINGS_ROOT_DIRECTORY=\"$FOX_SETTINGS_ROOT_DIRECTORY\"|" $F
   fi
 
   # disable auto-reboot after installing OrangeFox?
