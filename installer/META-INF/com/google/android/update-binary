@@ -9,7 +9,7 @@
 # ******************************************************
 
 # last_modified
-MOD_DATE="20260313"
+MOD_DATE="20260316"
 
 # whether to print extra debug messages
 FOX_INSTALLER_DEBUG_MODE=0
@@ -102,6 +102,9 @@ FOX_VANILLA_BUILD=0
 
 # whether we have been given a fixed OrangeFox stuff directory
 FOX_MISCELLANEOUS_ROOT_DIRECTORY=""
+
+# whether we've been given a new settings root
+FOX_SETTINGS_ROOT_DIRECTORY=""
 
 # whether to disable auto-reboot after installing OrangeFox
 FOX_INSTALLER_DISABLE_AUTOREBOOT=0
@@ -824,6 +827,17 @@ local PART=$(readlink $RECOVERY_PARTITION)
 }
 
 # reset settings to default
+Legacy_Reset_Settings() {
+local F="$1"
+	[ -z "$F" ] && F=/sdcard
+	local FOX=$F/Fox
+	ui_print "- Removing any legacy OrangeFox configuration files ..."
+	rm -rf $FOX/.bin.
+	rm -rf $FOX/.theme
+	rm -rf $FOX/.navbar
+	rm -f $FOX/.fox*
+}
+
 Reset_Settings() {
 local FOX_HOME=$(getprop "ro.orangefox.home")
 local FOX_SETTINGS=$(getprop "ro.orangefox.settings")
@@ -847,6 +861,33 @@ local FOX_SETTINGS=$(getprop "ro.orangefox.settings")
 	else
 		[ "$PERSIST_PATH" = "ERROR" ] && ui_print "- Some old settings might remain."
 	fi
+
+	# remove any lingering legacy settings
+	Legacy_Reset_Settings;
+
+	# other contingencies (eg, installing with R11, or with another recovery)
+	local F=""
+	if [ -n "$FOX_SETTINGS_ROOT_DIRECTORY" ]; then
+		F=$FOX_SETTINGS_ROOT_DIRECTORY"/Fox"
+		if [ "$F" != "$FOX_SETTINGS" ]; then
+			FOX_SETTINGS=$F
+			rm -rf $FOX_SETTINGS/.theme
+			rm -rf $FOX_SETTINGS/.navbar
+			rm -f $FOX_SETTINGS/.fox*
+		fi
+	fi
+
+	if [ -n "$FOX_MISCELLANEOUS_ROOT_DIRECTORY" ]; then
+		F=$FOX_MISCELLANEOUS_ROOT_DIRECTORY"/Fox"
+		if [ "$F" != "$FOX_HOME" ]; then
+			FOX_HOME=$F
+			rm -rf $FOX_HOME/.bin.
+			rm -f $FOX_HOME/.bash*
+			rm -f $FOX_HOME/fox*
+			rm -f $FOX_HOME/aromafm.cfg
+		fi
+	fi
+	#
 }
 
 # install the OrangeFox extras to internal SD
