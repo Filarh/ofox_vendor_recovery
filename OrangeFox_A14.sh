@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 16 March 2026
+# 18 March 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -1598,7 +1598,6 @@ if [ "$FOX_VENDOR_CMD" = "Fox_Before_Recovery_Image" ]; then
 	fi
   else
 	rm -f $FOX_RAMDISK/$RAMDISK_SYSTEM_LIB64/libc++_v36.so
-	rm -f $FOX_RAMDISK/$RAMDISK_SYSTEM_BIN/keystore2
   fi
 
 #########################################################################################
