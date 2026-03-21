@@ -9,7 +9,7 @@
 # ******************************************************
 
 # last_modified
-MOD_DATE="20260316"
+MOD_DATE="20260321"
 
 # whether to print extra debug messages
 FOX_INSTALLER_DEBUG_MODE=0
@@ -308,7 +308,7 @@ CheckRequirements() {
 
 # do we have a virtual A/B device?
 is_VAB() {
-	if [ "$FOX_VIRTUAL_AB_DEVICE" = "1" -o "$(getprop ro.orangefox.virtual_ab)" = "1" -o "$(getprop ro.virtual_ab.enabled)" = "true" ]; then
+	if [ "$FOX_VIRTUAL_AB_DEVICE" = "1" -o "$($GETPROP ro.orangefox.virtual_ab)" = "1" -o "$($GETPROP ro.virtual_ab.enabled)" = "true" ]; then
 		echo "1"
 	else
 		echo "0"
@@ -839,8 +839,8 @@ local F="$1"
 }
 
 Reset_Settings() {
-local FOX_HOME=$(getprop "ro.orangefox.home")
-local FOX_SETTINGS=$(getprop "ro.orangefox.settings")
+local FOX_HOME=$($GETPROP "ro.orangefox.home")
+local FOX_SETTINGS=$($GETPROP "ro.orangefox.settings")
 	[ -z "$FOX_HOME" ] && FOX_HOME=/sdcard/Fox
 	[ -z "$FOX_SETTINGS" ] && FOX_SETTINGS=/sdcard/Fox
 
