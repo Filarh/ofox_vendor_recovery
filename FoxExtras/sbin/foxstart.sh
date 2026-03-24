@@ -27,7 +27,7 @@
 # * Do some other sundry stuff
 #
 #
-SCRIPT_LASTMOD_DATE="20251120"
+SCRIPT_LASTMOD_DATE="20260324"
 C="/tmp_cust"
 LOG="/tmp/recovery.log"
 LOG2="/sdcard/foxstart.log"
