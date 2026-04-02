@@ -9,7 +9,7 @@
 # ******************************************************
 
 # last_modified
-MOD_DATE="20260321"
+MOD_DATE="20260402"
 
 # whether to print extra debug messages
 FOX_INSTALLER_DEBUG_MODE=0
@@ -931,6 +931,8 @@ Install_OrangeFox_Extras_To_sdcard() {
 	   rm -rf "$internal_SD/Fox/FoxFiles"
    	   rm -f "$internal_SD/Fox/.wolfs"
    	   package_extract_dir "sdcard" "$internal_SD"
+	   chcon -R "u:object_r:media_rw_data_file:s0" "$internal_SD/Fox"
+	   chown -R "media_rw:media_rw" "$internal_SD/Fox"
    	}
 }
 
