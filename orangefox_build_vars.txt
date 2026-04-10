@@ -8,7 +8,7 @@
 # The build vars beginning with "OF_" can be exported in vendorsetup.sh, or can be declared in a device tree make (ie, ".mk") file
 #
 # Copyright (C) 2019-2026 OrangeFox Recovery Project
-# Date: 13 March 2026
+# Date: 10 April 2026
 #
 # -----------------------------------
 #
@@ -948,4 +948,20 @@
    - if set to 1, then the prebuilt api_36 libc++ will be added to the recovery
    - if set to 2, then the prebuilt api_36 libc++ and keystore2 will be added to the recovery
    - be *extremely careful* before choosing the value of 2, because this will overwrite the standard keystore2 built with the recovery
+##
+"OF_DONT_SUBSTITUTE_PERMISSIONS" [NEW] [! EXPERIMENTAL !]
+   - Set this to 1 to opt out of substituting permissions/selinux contexts for OrangeFox-related files/folders, as required by Android 16 QPR2's access strictness
+   - If set to 1, OrangeFox leaves permissions/contexts alone, as normal. This is likely to cause restricted access (in Android 16 QPR2) to files/folders created
+   - by OrangeFox in the internal storage, because they will most likely be owned by root, and their selinux contexts would not be "media_rw".
+   - So, it is best to stay away from this setting, unless the subtituted permissions are causing problems.
+   - default = 0
+#
+"OF_VAB_ORS_WIPE_DATA_IS_FORMAT" [NEW] [! EXPERIMENTAL !]
+   - Set this to 1 to respond to ORS '--wipe-data' instructions in the expected manner, by formatting data.
+   - This is what AOSP recoveries do, and this (a 'factory reset') is what the system update_engine expects. Currently, we just wipe data, instead of formatting it.
+   - For virtual A/B devices, this often leaves the device a permanent 'merge' status after flashing a ROM (the 'unmerged snapshot' problem), causing a brick.
+   - This build var instructs the recovery to respond as expected, rather than as twrp has always done.
+   - This is only relevant to Virtual A/B devices. Do NOT try to use it for non-virtual A/B devices - you will only get a build error.
+   - default = 0
+#
 # -----------------------------------
