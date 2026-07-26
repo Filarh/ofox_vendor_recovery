@@ -8,7 +8,7 @@
 # The build vars beginning with "OF_" can be exported in vendorsetup.sh, or can be declared in a device tree make (ie, ".mk") file
 #
 # Copyright (C) 2019-2026 OrangeFox Recovery Project
-# Date: 10 April 2026
+# Date: 26 July 2026
 #
 # -----------------------------------
 #
@@ -964,4 +964,9 @@
    - This is only relevant to Virtual A/B devices. Do NOT try to use it for non-virtual A/B devices - you will only get a build error.
    - default = 0
 #
+"FOX_USE_MISANS_FONTS" [NEW]
+   - Set this to 1 to use the MiSans font (to replace the InterDisplay font) in order to display Chinese language translations correctly.
+   - Note that the MiSans fonts are nearly 16MB in size, and so this variable cannot be used for devices that have limited space for recovery images.
+   - Do NOT use this variable unless your recovery build can accommodate another 11MB (or so) of extra font files.
+   - default = 0
 # -----------------------------------
