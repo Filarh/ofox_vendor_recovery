@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 26 July 2026
+# 31 August 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -1123,6 +1123,81 @@ EOF
 chmod 0755 $tmp1
 } # end function process_custom_bins_to_sdcard()
 
+# vendor_boot target - do we have a reference vendor_boot image, whose ramdisks we will use, only replacing the recovery ramdisk?
+process_reference_vendor_boot_image() {
+	[ "$IS_VENDOR_BOOT_RECOVERY" != "1" ] && return; # check for vendor_boot
+	local image=$1;
+	[ -z "$FOX_REFERENCE_VENDOR_BOOT_IMAGE" -o -z "$image" ] && return;
+
+	if [ ! -f "$FOX_REFERENCE_VENDOR_BOOT_IMAGE" -o ! -f "$image" ]; then
+		if [ ! -f "$image" ]; then
+			echo -e "${WHITEONRED}-- ERROR. Invalid file: $image ... ${NC}";
+		else
+			echo -e "${WHITEONRED}-- ERROR. Invalid reference vendor_boot image: $FOX_REFERENCE_VENDOR_BOOT_IMAGE ... ${NC}";
+		fi
+		echo -e "${WHITEONRED}-- The built recovery will be defective ... ${NC}";
+		abort 201;
+	fi
+
+	local here=$PWD;
+	local tmp_dir=/tmp/$FOX_DEVICE/000_tmp_000;
+	local fox_tmp_dir=/tmp/$FOX_DEVICE/000_tmp_0010;
+
+	rm -rf $tmp_dir $fox_tmp_dir;
+	mkdir -p $tmp_dir $fox_tmp_dir;
+
+	# unpack the newly-built vendor_boot
+	cd $fox_tmp_dir;
+	$FOX_VENDOR_PATH/tools/magiskboot unpack -n "$image";
+	if [ "$?" != "0" ]; then
+		echo -e "${RED}-- Error unpacking $image ... ${NC}";
+		cd $here;
+		rm -rf $tmp_dir $fox_tmp_dir;
+		return;
+	fi
+
+	local tcpio="vendor_ramdisk_recovery.cpio"; #v4+ header
+	[ ! -f $tcpio ] && tcpio="vendor_ramdisk/recovery.cpio"; #v4+ header + latest magiskboot canary
+	[ ! -f $tcpio ] && tcpio="ramdisk.cpio"; #v3 or earlier header
+	tcpio=$fox_tmp_dir/$tcpio;
+
+	# unpack the stock image
+	cd $tmp_dir;
+	$FOX_VENDOR_PATH/tools/magiskboot unpack -n "$FOX_REFERENCE_VENDOR_BOOT_IMAGE"; # unpack stock image
+	if [ "$?" != "0" ]; then
+		echo -e "${RED}-- Error unpacking $FOX_REFERENCE_VENDOR_BOOT_IMAGE ... ${NC}";
+		cd $here;
+		rm -rf $tmp_dir $fox_tmp_dir;
+		return;
+	fi
+
+	local F="vendor_ramdisk_recovery.cpio"; #v4+ header
+	[ ! -f $F ] && F="vendor_ramdisk/recovery.cpio"; #v4+ header + latest magiskboot canary
+	[ ! -f $F ] && F="ramdisk.cpio"; #v3 or earlier header
+	if [ -f $F ]; then
+		$CP -p $tcpio $F; # copy fox recovery cpio over stock recovery cpio
+		$FOX_VENDOR_PATH/tools/magiskboot repack "$FOX_REFERENCE_VENDOR_BOOT_IMAGE" "$image"; # repack to fox image
+		if [ "$?" != "0" ]; then
+			echo -e "${RED}-- Error repacking $image ... ${NC}";
+		fi
+
+		# check that we haven't created an image that is too big for the partition
+		if [ -n "$BOARD_VENDOR_BOOTIMAGE_PARTITION_SIZE" ]; then
+			local fsize=$(filesize "$image");
+			if [ $fsize -gt $BOARD_VENDOR_BOOTIMAGE_PARTITION_SIZE ]; then
+				cd $here;
+				rm -rf $tmp_dir $fox_tmp_dir;
+				rm -f $RECOVERY_IMAGE $image;
+				echo -e "${WHITEONRED}-- FATAL ERROR: the size of $(basename $image) ($fsize) is greater than the partition size ($BOARD_VENDOR_BOOTIMAGE_PARTITION_SIZE) ... ${NC}";
+				abort 202;
+			fi
+		fi
+	fi
+
+	cd $here;
+	rm -rf $tmp_dir $fox_tmp_dir;
+} # end function process_reference_vendor_boot_image()
+
 # ****************************************************
 # *** now the real work starts!
 # ****************************************************
@@ -1773,6 +1848,7 @@ if [ "$FOX_VENDOR_CMD" = "Fox_After_Recovery_Image" ]; then
         else
            INSTALLED_RECOVERYIMAGE_TARGET="$OUT/$COMPILED_IMAGE_FILE"
         fi
+	process_reference_vendor_boot_image  $INSTALLED_RECOVERYIMAGE_TARGET
      fi
 
      # copy
