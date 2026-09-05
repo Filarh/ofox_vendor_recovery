@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 31 August 2026
+# 05 September 2026
 #
 # *** This script is for the OrangeFox Android 14.1 manifest ***
 #
@@ -1343,6 +1343,7 @@ if [ "$FOX_VENDOR_CMD" = "Fox_Before_Recovery_Image" ]; then
 
      mkdir -p $FOX_RAMDISK/FFiles/OF_Magisk/
      $CP -pf $tmp $FOX_RAMDISK/FFiles/OF_Magisk/Magisk.zip
+     ln -sf /FFiles/OF_Magisk/Magisk.zip $FOX_RAMDISK/FFiles/OF_Magisk/uninstall.zip
   fi
 
   # Include bash shell ?
