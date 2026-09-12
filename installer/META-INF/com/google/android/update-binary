@@ -9,7 +9,7 @@
 # ******************************************************
 
 # last_modified
-MOD_DATE="20260402"
+MOD_DATE="20260912"
 
 # whether to print extra debug messages
 FOX_INSTALLER_DEBUG_MODE=0
@@ -742,10 +742,10 @@ local F_RAM
 		"$tool" unpack -h boot.img || abort "- I cannot unpack the $name$slot image."
 
 		# kernel string want_initramfs -> skip_initramfs (Magisk)
-		"$tool" hexpatch kernel 77616E745F696E697472616D6673 736B69705F696E697472616D6673
+		"$tool" hexpatch kernel 77616E745F696E697472616D6673 736B69705F696E697472616D6673 > /dev/null 2>&1
 
 		# kernel string trip_initramfs -> skip_initramfs (SuperSU)
-		"$tool" hexpatch kernel 747269705F696E697472616D6673 736B69705F696E697472616D6673
+		"$tool" hexpatch kernel 747269705F696E697472616D6673 736B69705F696E697472616D6673 > /dev/null 2>&1
 
 		# boot.img header cmdline remove skip_override (flar2 patch)
 		sed -i "s|$(grep '^cmdline=' header | cut -d= -f2-)|$(grep '^cmdline=' header | cut -d= -f2- | sed -e 's/skip_override//' -e 's/  */ /g' -e 's/[ \t]*$//')|" header
