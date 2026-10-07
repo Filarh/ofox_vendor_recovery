@@ -19,7 +19,7 @@
 # 	Please maintain this if you use this script or any part of it
 #
 # ******************************************************************************
-# 13 September 2026
+# 07 October 2026
 #
 # *** This is a unified script for the OrangeFox Android manifests ***
 #
@@ -1657,6 +1657,17 @@ if [ "$FOX_VENDOR_CMD" = "Fox_Before_Recovery_Image" ]; then
   if [ "$FOX_USE_BUSYBOX_BINARY" = "1" ]; then
      $CP -p $FOX_VENDOR_PATH/prebuilt/$TARGET_ARCH/busybox $FOX_RAMDISK/$RAMDISK_SBIN/busybox
      chmod 0755 $FOX_RAMDISK/$RAMDISK_SBIN/busybox
+
+     # create symlinks for selected applets (ones that don't clash with existing commands)
+     tmp=$FOX_VENDOR_PATH/Files/bbx_sel_applets.txt
+     if [ -f $tmp ]; then
+	echo -e "${GREEN}-- Creating symlinks for selected busybox applets (from the predefined list in $tmp). ${NC}"
+	for applet in $(cat $tmp); do
+		ln -sf busybox "$FOX_RAMDISK/$RAMDISK_SBIN/$applet"
+	done
+     else
+	echo -e "${WHITEONRED}-- Predefined selected busybox applets list ($tmp) not found. Skipping symlinks. ${NC}"
+     fi
   else
      rm -f $FOX_RAMDISK/$RAMDISK_SBIN/busybox
   fi
