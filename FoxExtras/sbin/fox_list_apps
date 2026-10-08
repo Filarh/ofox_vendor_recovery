@@ -16,6 +16,14 @@
 #
 # Please maintain this if you use this script or any part of it
 #
+# Writes one file per installed app to $FOX_LISTAPPS_DIR/list (default
+# /tmp/listapps/list): the file name is the app label, the content is the
+# app's code directory under /data/app.
+#
+# Every external command costs ~26 ms in recovery (toybox loads libcrypto,
+# whose self-test runs per process), so apps are found with a single glob,
+# each APK is read by exactly one aapt process, the label is parsed with
+# shell builtins, and the APKs are split over up to 8 parallel workers.
 
 is_mounted() {
   [ -z "$1" ] && { echo "0"; return; }
@@ -23,40 +31,78 @@ is_mounted() {
   [ "$?" = "1" ] && echo "0" || echo "1"
 }
 
+# $1 = code directory (/data/app/~~X==/pkg-Y== or /data/app/pkg-Y==)
+Add_App() {
+local dir="$1"
+local base="${dir##*/}"
+local pkgname="${base%%-*}"
+local name=""
+local line
+
+	if [ -n "$AAPT" ]; then
+	   while IFS= read -r line; do
+		case "$line" in
+		   "application-label:'"*)
+			name="${line#application-label:\'}"
+			name="${name%\'}"
+			break
+			;;
+		esac
+	   done <<EOF
+$($AAPT dump badging "$dir/base.apk" 2>/dev/null)
+EOF
+	fi
+	[ -z "$name" ] && name="$pkgname"
+	# a label is used as a file name
+	case "$name" in
+	   */*) name=$(echo "$name" | tr '/' '_');;
+	esac
+	# noclobber makes the existence check atomic across workers
+	( set -C; echo "$dir" > "$LIST/$name" ) 2>/dev/null || echo "$dir" > "$LIST/$name ($pkgname)"
+}
+
 Do_Get_List() {
 local AAPT1="/sbin/aapt"
 local AAPT2="/sbin/aapt2"
-local tmp="/tmp/listapps"
-local list="$tmp/list"
-local apps_dir="/data/app"
-local namestr="application-label:'"
+local tmp="${FOX_LISTAPPS_DIR:-/tmp/listapps}"
 local d_mnt=$(is_mounted "/data")
+local workers=8
+local i n apk
 
-	[ -d "$list" ] && return
+	LIST="$tmp/list"
+	[ -d "$LIST" ] && return
 	[ "$d_mnt" != "1" ] && mount /data
 
-	mkdir -p "$tmp" "$list"
+	mkdir -p "$tmp" "$LIST"
 
-	if [ -f "$AAPT1" -o -f "$AAPT2" ]; then
+	AAPT=""
+	if [ -f "$AAPT1" ]; then
 	   AAPT="$AAPT1"
-	   [ ! -f "$AAPT1" ] && AAPT="$AAPT2"
-	   for pkgname in $(ls /data/app/* | cut -d':' -f2 | cut -d'-' -f1 | sed "/^$/d" ) ; do
-	       	fullpath=$(ls /data/app/*/* | grep $pkgname | cut -d':' -f1)
-	       	if [ -f "$fullpath/base.apk" ]; then
-	           name=$($AAPT dump badging "$fullpath/base.apk" | grep "$namestr" | sed "s/"$namestr"//" | sed "s/'//" | sed "s/'//")
-	           if [ -n "$name" -a -f "$list/$name" ]; then
-			echo "$fullpath" > "$list/$name ($pkgname)"
-	           else
-			echo "$fullpath" > "$list/$name"
-	           fi
-		fi
-	   done
-	else
-	   for pkgname in $(ls /data/app/* | cut -d':' -f2 | cut -d'-' -f1 | sed "/^$/d" ) ; do
-		fullpath=$(ls /data/app/*/* | grep $pkgname | cut -d':' -f1)
-		[ -f "$fullpath/base.apk" ] && echo "$fullpath" > "$list/$pkgname"
-	   done
+	elif [ -f "$AAPT2" ]; then
+	   AAPT="$AAPT2"
 	fi
+
+	# Android 11+ nests apps as /data/app/~~X==/pkg-Y==; older ones as /data/app/pkg-Y==
+	set -- /data/app/*/*/base.apk /data/app/*/base.apk
+	n=0
+	for apk in "$@"; do
+		[ -f "$apk" ] && n=$((n + 1))
+	done
+	[ "$n" -lt "$workers" ] && workers="$n"
+
+	i=0
+	while [ "$i" -lt "$workers" ]; do
+	   (
+		k=0
+		for apk in "$@"; do
+			[ -f "$apk" ] || continue
+			[ $((k % workers)) -eq "$i" ] && Add_App "${apk%/base.apk}"
+			k=$((k + 1))
+		done
+	   ) &
+	   i=$((i + 1))
+	done
+	wait
 
 	exit 0
 }
